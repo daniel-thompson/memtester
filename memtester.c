@@ -1,5 +1,5 @@
 /*
- * memtester version 4.0.0
+ * memtester version 4
  *
  * Very simple but very effective user-space memory tester.
  * Originally by Simon Kirby <sim@stormix.com> <sim@neato.org>
@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.0.1"
+#define __version__ "4.0.2"
 
 #include <stddef.h>
 #include <stdlib.h>
