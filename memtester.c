@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.0.0"
+#define __version__ "4.0.1"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
     }
 
     printf("got  %lluMB (%llu bytes)\n", (ull) wantbytes >> 20, 
-        wantbytes);
+        (ull) wantbytes);
     bufsize = wantbytes;
 
     if ((size_t) buf % pagesize) {
