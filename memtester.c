@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.0.3"
+#define __version__ "4.0.4"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -26,28 +26,32 @@
 #include "sizes.h"
 #include "tests.h"
 
+#define EXIT_FAIL_NONSTARTER    0x01
+#define EXIT_FAIL_ADDRESSLINES  0x02
+#define EXIT_FAIL_OTHERTEST     0x04
+
 struct test tests[] = {
-	{ "Random Value", test_random_value },
-	{ "Compare XOR", test_xor_comparison },
-	{ "Compare SUB", test_sub_comparison },
-	{ "Compare MUL", test_mul_comparison },
-	{ "Compare DIV",test_div_comparison },
-	{ "Compare OR", test_or_comparison },
-	{ "Compare AND", test_and_comparison },
-	{ "Sequential Increment", test_seqinc_comparison },
-	{ "Solid Bits", test_solidbits_comparison },
-	{ "Block Sequential", test_blockseq_comparison },
-	{ "Checkerboard", test_checkerboard_comparison },
-	{ "Bit Spread", test_bitspread_comparison },
-	{ "Bit Flip", test_bitflip_comparison },
-	{ "Walking Ones", test_walkbits1_comparison },
-	{ "Walking Zeroes", test_walkbits0_comparison },
-	{ NULL, NULL }
+    { "Random Value", test_random_value },
+    { "Compare XOR", test_xor_comparison },
+    { "Compare SUB", test_sub_comparison },
+    { "Compare MUL", test_mul_comparison },
+    { "Compare DIV",test_div_comparison },
+    { "Compare OR", test_or_comparison },
+    { "Compare AND", test_and_comparison },
+    { "Sequential Increment", test_seqinc_comparison },
+    { "Solid Bits", test_solidbits_comparison },
+    { "Block Sequential", test_blockseq_comparison },
+    { "Checkerboard", test_checkerboard_comparison },
+    { "Bit Spread", test_bitspread_comparison },
+    { "Bit Flip", test_bitflip_comparison },
+    { "Walking Ones", test_walkbits1_comparison },
+    { "Walking Zeroes", test_walkbits0_comparison },
+    { NULL, NULL }
 };
 
 #ifdef _SC_VERSION
 void check_posix_system(void) {
-    if (sysconf(_SC_VERSION) < 199009L) {
+    if (sysconf(_SC_VERSION) < 198808L) {
         fprintf(stderr, "A POSIX system is required.  Don't be surprised if "
             "this craps out.\n");
         fprintf(stderr, "_SC_VERSION is %lu\n", sysconf(_SC_VERSION));
@@ -62,7 +66,7 @@ int memtester_pagesize(void) {
     int pagesize = sysconf(_SC_PAGE_SIZE);
     if (pagesize == -1) {
         perror("get page size failed");
-        exit(1);
+        exit(EXIT_FAIL_NONSTARTER);
     }
     printf("pagesize is %ld\n", pagesize);
     return pagesize;
@@ -81,25 +85,26 @@ int main(int argc, char **argv) {
     void volatile *buf, *aligned;
     ulv *bufa, *bufb;
     int do_mlock = 1, done_mem = 0;
+    int exit_code = 0;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
     printf("Copyright (C) 2004 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
-	check_posix_system();
-	pagesize = memtester_pagesize();
+    check_posix_system();
+    pagesize = memtester_pagesize();
     pagesizemask = (ptrdiff_t) ~(pagesize - 1);
     printf("pagesizemask is 0x%tx\n", pagesizemask);
 
     if (argc < 2) {
         fprintf(stderr, "need memory argument, in MB\n");
-        exit(1);
+        exit(EXIT_FAIL_NONSTARTER);
     }
     wantmb = (size_t) strtoul(argv[1], NULL, 0);
     wantbytes = (size_t) (wantmb << 20);
     if (wantbytes < pagesize) {
         fprintf(stderr, "bytes < pagesize -- memory argument too large?\n");
-        exit(1);
+        exit(EXIT_FAIL_NONSTARTER);
     }
 
     if (argc < 3) {
@@ -107,7 +112,7 @@ int main(int argc, char **argv) {
     } else {
         loops = strtoul(argv[2], NULL, 0);
     }
-    
+
     printf("want %lluMB (%llu bytes)\n", (ull) wantmb, (ull) wantbytes);
     buf = NULL;
 
@@ -117,7 +122,7 @@ int main(int argc, char **argv) {
             if (!buf) wantbytes -= pagesize;
         }
         bufsize = wantbytes;
-        printf("got  %lluMB (%llu bytes), trying mlock ...", (ull) wantbytes >> 20, 
+        printf("got  %lluMB (%llu bytes), trying mlock ...", (ull) wantbytes >> 20,
             (ull) wantbytes);
         fflush(stdout);
         if ((size_t) buf % pagesize) {
@@ -166,20 +171,28 @@ int main(int argc, char **argv) {
             printf("/%lu", loops);
         }
         printf(":\n");
-    	printf("  %-20s: ", "Stuck Address");
-    	fflush(stdout);
-    	if (!test_stuck_address(aligned, bufsize / sizeof(ul))) printf("ok\n");
-    	for (i=0;;i++) {
-    		if (!tests[i].name) break;
-		    printf("  %-20s: ", tests[i].name);
-            if (!tests[i].fp(bufa, bufb, count)) printf("ok\n");
-			fflush(stdout);
-    	}
-    	printf("\n");
-    	fflush(stdout);
+        printf("  %-20s: ", "Stuck Address");
+        fflush(stdout);
+        if (!test_stuck_address(aligned, bufsize / sizeof(ul))) {
+             printf("ok\n");
+        } else {
+            exit_code |= EXIT_FAIL_ADDRESSLINES;
+        }
+        for (i=0;;i++) {
+            if (!tests[i].name) break;
+            printf("  %-20s: ", tests[i].name);
+            if (!tests[i].fp(bufa, bufb, count)) {
+                printf("ok\n");
+            } else {
+                exit_code |= EXIT_FAIL_OTHERTEST;
+            }
+            fflush(stdout);
+        }
+        printf("\n");
+        fflush(stdout);
     }
     if (do_mlock) munlock((void *) aligned, bufsize);
-	printf("Done.\n");
-	fflush(stdout);
-    exit(0);
+    printf("Done.\n");
+    fflush(stdout);
+    exit(exit_code);
 }

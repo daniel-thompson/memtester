@@ -1,3 +1,10 @@
+Version 4.0.4
+26 August 2004
+
+  -make memtester's exit code meaningful.  See the manpage for its meaning.
+  Thanks to Wurzel Parsons-Keir, who sent a patch for the code, so I only had
+  to document it.
+
 Version 4.0.3
 10 August 2004
 

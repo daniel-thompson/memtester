@@ -53,6 +53,7 @@
         FreeBSD 4.9 (32-bit Intel)
         FreeBSD 5.1 (64-bit Alpha)
         NetBSD 1.6 (32-bit Intel)
+        Darwin (OS X) 7.5.0 (32-bit PowerPC)
 
     It should, however, work on other Unix-like systems -- I simply don't
     have access to systems running Solaris, AIX, etc. at the moment.
