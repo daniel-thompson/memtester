@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.0.2"
+#define __version__ "4.0.3"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -45,37 +45,51 @@ struct test tests[] = {
 	{ NULL, NULL }
 };
 
-int main(int argc, char **argv) {
-    long pagesize;
-    ul pagesizemask, loops, loop, i;
-    size_t wantmb, wantbytes, bufsize, halflen, count;
-    void volatile *buf, *aligned;
-    ulv *bufa, *bufb;
-    int do_mlock = 1;
-
-    printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2004 Charles Cazabon.\n");
-    printf("Licensed under the GNU General Public License version 2 (only).\n");
-    printf("\n");
+#ifdef _SC_VERSION
+void check_posix_system(void) {
     if (sysconf(_SC_VERSION) < 199009L) {
         fprintf(stderr, "A POSIX system is required.  Don't be surprised if "
             "this craps out.\n");
         fprintf(stderr, "_SC_VERSION is %lu\n", sysconf(_SC_VERSION));
     }
+}
+#else
+#define check_posix_system()
+#endif
 
 #ifdef _SC_PAGE_SIZE
-    pagesize = sysconf(_SC_PAGE_SIZE);
+int memtester_pagesize(void) {
+    int pagesize = sysconf(_SC_PAGE_SIZE);
     if (pagesize == -1) {
         perror("get page size failed");
         exit(1);
     }
     printf("pagesize is %ld\n", pagesize);
+    return pagesize;
+}
 #else
-    pagesize = 8192;
-    printf("sysconf(_SC_PAGE_SIZE) not supported; using pagesize of %ld\n", pagesize);
+int memtester_pagesize(void) {
+    printf("sysconf(_SC_PAGE_SIZE) not supported; using pagesize of 8192\n");
+    return 8192;
+}
 #endif
-    pagesizemask = ~(pagesize - 1);
-    printf("pagesizemask is 0x%lx\n", pagesizemask);
+
+int main(int argc, char **argv) {
+    ul loops, loop, i;
+    size_t pagesize, wantmb, wantbytes, bufsize, halflen, count;
+    ptrdiff_t pagesizemask;
+    void volatile *buf, *aligned;
+    ulv *bufa, *bufb;
+    int do_mlock = 1, done_mem = 0;
+
+    printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
+    printf("Copyright (C) 2004 Charles Cazabon.\n");
+    printf("Licensed under the GNU General Public License version 2 (only).\n");
+    printf("\n");
+	check_posix_system();
+	pagesize = memtester_pagesize();
+    pagesizemask = (ptrdiff_t) ~(pagesize - 1);
+    printf("pagesizemask is 0x%tx\n", pagesizemask);
 
     if (argc < 2) {
         fprintf(stderr, "need memory argument, in MB\n");
@@ -96,37 +110,48 @@ int main(int argc, char **argv) {
     
     printf("want %lluMB (%llu bytes)\n", (ull) wantmb, (ull) wantbytes);
     buf = NULL;
-    while (!buf && wantbytes) {
-        buf = (void volatile *) malloc(wantbytes);
-        if (!buf) wantbytes -= pagesize;
-    }
 
-    printf("got  %lluMB (%llu bytes)\n", (ull) wantbytes >> 20, 
-        (ull) wantbytes);
-    bufsize = wantbytes;
-
-    if ((size_t) buf % pagesize) {
-        printf("aligning to page\n");
-        aligned = (void volatile *) ((size_t) buf & pagesizemask);
-        bufsize -= ((size_t) aligned - (size_t) buf);
-    } else {
-        aligned = buf;
-    }
-    
-    /* Try memlock */
-    if (mlock((void *) aligned, bufsize) < 0) {
-        do_mlock = 0;
-        switch(errno) {
-            case ENOMEM:
-                printf("mlock() failed: too many pages\n");
-                break;
-            case EPERM:
-                printf("mlock() failed: insufficient permission\n");
-                break;
-            default:
-                printf("mlock() failed: unknown reason\n");
+    while (!done_mem) {
+        while (!buf && wantbytes) {
+            buf = (void volatile *) malloc(wantbytes);
+            if (!buf) wantbytes -= pagesize;
+        }
+        bufsize = wantbytes;
+        printf("got  %lluMB (%llu bytes), trying mlock ...", (ull) wantbytes >> 20, 
+            (ull) wantbytes);
+        fflush(stdout);
+        if ((size_t) buf % pagesize) {
+            /* printf("aligning to page\n"); */
+            aligned = (void volatile *) ((size_t) buf & pagesizemask);
+            bufsize -= ((size_t) aligned - (size_t) buf);
+        } else {
+            aligned = buf;
+        }
+        /* Try memlock */
+        if (mlock((void *) aligned, bufsize) < 0) {
+            switch(errno) {
+                case ENOMEM:
+                    printf("too many pages, reducing...\n");
+                    free((void *) buf);
+                    buf = NULL;
+                    wantbytes -= pagesize;
+                    break;
+                case EPERM:
+                    printf("insufficient permission.\n");
+                    do_mlock = 0;
+                    done_mem = 1;
+                    break;
+                default:
+                    printf("failed for unknown reason.\n");
+                    do_mlock = 0;
+                    done_mem = 1;
+            }
+        } else {
+            printf("locked.\n");
+            done_mem = 1;
         }
     }
+
     if (!do_mlock) fprintf(stderr, "Continuing with unlocked memory; testing "
         "will be slower and less reliable.\n");
 

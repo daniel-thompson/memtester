@@ -1,5 +1,5 @@
 * On some platforms, a few of the initial output messages don't format
-  correctly, due to %llu not being a supported printf format.  This
+  correctly, due to %llu or %tx not being a supported printf format.  This
   is harmless.
 
 If you spot any other bugs in the software or documentation, please email

@@ -25,6 +25,10 @@ the amount of memory to allocate and test, in megabytes
 .TP
 \fIITERATIONS\fR
 (optional) number of loops to iterate through.  Default is infinite.
+.SH NOTE
+.TP
+memtester must be run with root privileges to mlock(3) its pages.  Testing
+memory without locking the pages in place is mostly pointless and slow.
 .SH AUTHOR
 Written by Charles Cazabon.
 .SH "REPORTING BUGS"
