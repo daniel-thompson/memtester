@@ -6,13 +6,13 @@
  * Version 2 by Charles Cazabon <memtest@discworld.dyndns.org>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2004 Charles Cazabon <memtest@discworld.dyndns.org>
+ * Copyright (C) 2005 Charles Cazabon <memtest@discworld.dyndns.org>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.0.4"
+#define __version__ "4.0.5"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -80,7 +80,7 @@ int memtester_pagesize(void) {
 
 int main(int argc, char **argv) {
     ul loops, loop, i;
-    size_t pagesize, wantmb, wantbytes, bufsize, halflen, count;
+    size_t pagesize, wantmb, wantbytes, wantbytes_orig, bufsize, halflen, count;
     ptrdiff_t pagesizemask;
     void volatile *buf, *aligned;
     ulv *bufa, *bufb;
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     int exit_code = 0;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2004 Charles Cazabon.\n");
+    printf("Copyright (C) 2005 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAIL_NONSTARTER);
     }
     wantmb = (size_t) strtoul(argv[1], NULL, 0);
-    wantbytes = (size_t) (wantmb << 20);
+    wantbytes_orig = wantbytes = (size_t) (wantmb << 20);
     if (wantbytes < pagesize) {
         fprintf(stderr, "bytes < pagesize -- memory argument too large?\n");
         exit(EXIT_FAIL_NONSTARTER);
@@ -122,38 +122,48 @@ int main(int argc, char **argv) {
             if (!buf) wantbytes -= pagesize;
         }
         bufsize = wantbytes;
-        printf("got  %lluMB (%llu bytes), trying mlock ...", (ull) wantbytes >> 20,
+        printf("got  %lluMB (%llu bytes)", (ull) wantbytes >> 20,
             (ull) wantbytes);
         fflush(stdout);
-        if ((size_t) buf % pagesize) {
-            /* printf("aligning to page\n"); */
-            aligned = (void volatile *) ((size_t) buf & pagesizemask);
-            bufsize -= ((size_t) aligned - (size_t) buf);
-        } else {
-            aligned = buf;
-        }
-        /* Try memlock */
-        if (mlock((void *) aligned, bufsize) < 0) {
-            switch(errno) {
-                case ENOMEM:
-                    printf("too many pages, reducing...\n");
-                    free((void *) buf);
-                    buf = NULL;
-                    wantbytes -= pagesize;
-                    break;
-                case EPERM:
-                    printf("insufficient permission.\n");
-                    do_mlock = 0;
-                    done_mem = 1;
-                    break;
-                default:
-                    printf("failed for unknown reason.\n");
-                    do_mlock = 0;
-                    done_mem = 1;
+        if (do_mlock) {
+            printf(", trying mlock ...");
+            fflush(stdout);
+            if ((size_t) buf % pagesize) {
+                /* printf("aligning to page\n"); */
+                aligned = (void volatile *) ((size_t) buf & pagesizemask);
+                bufsize -= ((size_t) aligned - (size_t) buf);
+            } else {
+                aligned = buf;
             }
-        } else {
-            printf("locked.\n");
+            /* Try memlock */
+            if (mlock((void *) aligned, bufsize) < 0) {
+                switch(errno) {
+                    case ENOMEM:
+                        printf("too many pages, reducing...\n");
+                        free((void *) buf);
+                        buf = NULL;
+                        wantbytes -= pagesize;
+                        break;
+                    case EPERM:
+                        printf("insufficient permission.\n");
+                        printf("Trying again, unlocked:\n");
+                        do_mlock = 0;
+                        free((void *) buf);
+                        buf = NULL;
+                        wantbytes = wantbytes_orig;
+                        break;
+                    default:
+                        printf("failed for unknown reason.\n");
+                        do_mlock = 0;
+                        done_mem = 1;
+                }
+            } else {
+                printf("locked.\n");
+                done_mem = 1;
+            }
+        } else { 
             done_mem = 1;
+            printf("\n"); 
         }
     }
 

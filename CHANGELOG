@@ -1,3 +1,14 @@
+Version 4.0.5
+10 March 2005
+
+  -change to the method of allocating and locking memory; if we get EPERM
+  when trying to mlock(), reset the amount of memory desired to the original
+  amount and try again without mlock().  The reason for this is that on many
+  systems, mlock() won't return EPERM until after having returned ENOMEM for
+  a larger amount.  The new behaviour allows processes without mlock privileges
+  to still test the fully-specified amount or as much memory as can be 
+  allocated.  Thanks for the suggestion and testing to Dan Bradley.
+
 Version 4.0.4
 26 August 2004
 

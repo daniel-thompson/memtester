@@ -2,7 +2,7 @@
 # Makefile for memtester by Charles Cazabon.
 #
 # Copyright (C) 1999 Simon Kirby.
-# Copyright (C) 1999-2004 Charles Cazabon.
+# Copyright (C) 1999-2005 Charles Cazabon.
 # Licensed under the GNU General Public License version 2.  See the file
 # COPYING for details.
 #
