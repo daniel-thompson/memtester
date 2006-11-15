@@ -4,7 +4,7 @@
  * Version 2 by Charles Cazabon <memtest@discworld.dyndns.org>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2005 Charles Cazabon <memtest@discworld.dyndns.org>
+ * Copyright (C) 2006 Charles Cazabon <memtest@discworld.dyndns.org>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
@@ -49,10 +49,10 @@ int test_stuck_address(ulv *bufa, size_t count) {
     unsigned int j;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (j = 0; j < 16; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         p1 = (ulv *) bufa;
         printf("setting %3u", j);
         fflush(stdout);
@@ -86,17 +86,17 @@ int test_random_value(ulv *bufa, ulv *bufb, size_t count) {
     ul j = 0;
     size_t i;
 
-	putchar(' ');
+    putchar(' ');
     fflush(stdout);
     for (i = 0; i < count; i++) {
         *p1++ = *p2++ = rand_ul();
-		if (!(i % PROGRESSOFTEN)) {
-			putchar('\b');
-			putchar(progress[++j % PROGRESSLEN]);
+        if (!(i % PROGRESSOFTEN)) {
+            putchar('\b');
+            putchar(progress[++j % PROGRESSLEN]);
             fflush(stdout);
-		}
+        }
     }
-	printf("\b \b");
+    printf("\b \b");
     fflush(stdout);
     return compare_regions(bufa, bufb, count);
 }
@@ -201,10 +201,10 @@ int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count) {
     ul q;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (j = 0; j < 64; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         q = (j % 2) == 0 ? UL_ONEBITS : 0;
         printf("setting %3u", j);
         fflush(stdout);
@@ -232,10 +232,10 @@ int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count) {
     ul q;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (j = 0; j < 64; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         q = (j % 2) == 0 ? CHECKERBOARD1 : CHECKERBOARD2;
         printf("setting %3u", j);
         fflush(stdout);
@@ -262,10 +262,10 @@ int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count) {
     unsigned int j;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (j = 0; j < 256; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         p1 = (ulv *) bufa;
         p2 = (ulv *) bufb;
         printf("setting %3u", j);
@@ -291,10 +291,10 @@ int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count) {
     unsigned int j;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
-    for (j = 0; j < 64; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+    for (j = 0; j < UL_LEN * 2; j++) {
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         p1 = (ulv *) bufa;
         p2 = (ulv *) bufb;
         printf("setting %3u", j);
@@ -324,10 +324,10 @@ int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count) {
     unsigned int j;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (j = 0; j < UL_LEN * 2; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         p1 = (ulv *) bufa;
         p2 = (ulv *) bufb;
         printf("setting %3u", j);
@@ -357,10 +357,10 @@ int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count) {
     unsigned int j;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (j = 0; j < UL_LEN * 2; j++) {
-	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+        printf("\b\b\b\b\b\b\b\b\b\b\b");
         p1 = (ulv *) bufa;
         p2 = (ulv *) bufb;
         printf("setting %3u", j);
@@ -397,12 +397,12 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
     ul q;
     size_t i;
 
-	printf("           ");
+    printf("           ");
     fflush(stdout);
     for (k = 0; k < UL_LEN; k++) {
         q = 0x00000001 << k;
         for (j = 0; j < 8; j++) {
-    	    printf("\b\b\b\b\b\b\b\b\b\b\b");
+            printf("\b\b\b\b\b\b\b\b\b\b\b");
             q = ~q;
             printf("setting %3u", k * 8 + j);
             fflush(stdout);

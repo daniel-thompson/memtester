@@ -4,7 +4,7 @@
  * Version 2 by Charles Cazabon <memtest@discworld.dyndns.org>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2005 Charles Cazabon <memtest@discworld.dyndns.org>
+ * Copyright (C) 2006 Charles Cazabon <memtest@discworld.dyndns.org>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
@@ -18,7 +18,7 @@ typedef unsigned long volatile ulv;
 
 struct test
 {
-	char *name;
-	int (*fp)();
+    char *name;
+    int (*fp)();
 };
 

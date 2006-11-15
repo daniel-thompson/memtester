@@ -1,3 +1,11 @@
+Version 4.0.6
+15 November 2006
+
+  -test algorithm improvement: the walking 0 bits test was only walking 
+  the 0 bit in one direction, instead of walking it up and back down 
+  the line the way it was intended to.  Thanks: Tim Rule.
+  -formatting cleanups.
+  
 Version 4.0.5
 10 March 2005
 

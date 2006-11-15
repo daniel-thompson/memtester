@@ -6,13 +6,13 @@
  * Version 2 by Charles Cazabon <memtest@discworld.dyndns.org>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2005 Charles Cazabon <memtest@discworld.dyndns.org>
+ * Copyright (C) 2006 Charles Cazabon <memtest@discworld.dyndns.org>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.0.5"
+#define __version__ "4.0.6"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     int exit_code = 0;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2005 Charles Cazabon.\n");
+    printf("Copyright (C) 2006 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();

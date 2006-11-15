@@ -4,12 +4,12 @@
   
     by Charles Cazabon <memtest@discworld.dyndns.org>
     
-    Copyright © 1999 Simon Kirby. 
+    Copyright 1999 Simon Kirby. 
     Version 2 Copyright © 1999 Charles Cazabon.
     Version 3 not publicly released.
     Version 4 rewrite:
-    Copyright © 2005 Charles Cazabon.
-    icensed under the terms of the GNU General Public License version 2 (only).
+    Copyright 2006 Charles Cazabon.
+    Licensed under the terms of the GNU General Public License version 2 (only).
     See the file COPYING for details.
 
 
@@ -77,7 +77,7 @@
   Current Version
   
     The current version of memtester should be available at
-    http://www.qcc.ca/~charlesc/software/memtester/ 
+    http://pyropus.ca/software/memtester/
     
     Questions, comments, bug reports, and feature requests should be
     directed to me at <memtest@discworld.dyndns.org>.
