@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.0.6"
+#define __version__ "4.0.7"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -129,8 +129,11 @@ int main(int argc, char **argv) {
             printf(", trying mlock ...");
             fflush(stdout);
             if ((size_t) buf % pagesize) {
-                /* printf("aligning to page\n"); */
-                aligned = (void volatile *) ((size_t) buf & pagesizemask);
+                /* printf("aligning to page -- was 0x%tx\n", buf); */
+                aligned = (void volatile *) ((size_t) buf & pagesizemask) + pagesize;
+                /* printf("  now 0x%tx -- lost %d bytes\n", aligned, 
+                 *      (size_t) aligned - (size_t) buf); 
+                 */
                 bufsize -= ((size_t) aligned - (size_t) buf);
             } else {
                 aligned = buf;
