@@ -1,3 +1,11 @@
+Version 4.0.8
+21 November 2007
+
+  -add a startup check for amount of memory being greater than the possible
+  address space; prevents user confusion on 32-bit systems that use addressing
+  tricks to have >4GB total system memory.  Thanks: Michael Kelly.
+  -documentation updates
+
 Version 4.0.7
 13 May 2007
 

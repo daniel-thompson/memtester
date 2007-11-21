@@ -1,4 +1,4 @@
-.TH memtester "8" "November 2006" "memtester 4" "Maintenance Commands"
+.TH memtester "8" "November 2007" "memtester 4" "Maintenance Commands"
 .SH NAME
 memtester \- stress test to find memory subsystem faults.
 .SH SYNOPSIS
@@ -17,6 +17,13 @@ memtester will malloc(3) the amount of memory specified, if possible.  If
 this fails, it will decrease the amount of memory requested until it succeeds.
 It will then attempt to mlock(3) this memory; if it cannot do so, testing
 will be slower and less effective.
+.PP
+Note that the maximum amount of memory that memtester can test will be less
+than the total amount of memory installed in the system; the operating system,
+libraries, and other system limits take some of the available memory.
+memtester is also limited to the amount of memory available to a single
+process; for example, on 32-bit machines with more than 4GB of memory,
+memtester is still limited to less than 4GB.
 .PP
 .SH OPTIONS
 .TP
@@ -45,10 +52,10 @@ error during one of the other tests
 .SH AUTHOR
 Written by Charles Cazabon.
 .SH "REPORTING BUGS"
-Report bugs to <memtester-bugs@discworld.dyndns.org>.
+Report bugs to <charlesc-memtester-bugs@pyropus.ca>.
 .PP
 .SH COPYRIGHT
-Copyright \(co 2006 Charles Cazabon
+Copyright \(co 2007 Charles Cazabon
 .br
 This is free software; see the file COPYING for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

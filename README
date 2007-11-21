@@ -2,13 +2,13 @@
                                        
   Utility to test for faulty memory subsystem.
   
-    by Charles Cazabon <memtest@discworld.dyndns.org>
+    by Charles Cazabon <charlesc-memtester@pyropus.ca>
     
     Copyright 1999 Simon Kirby. 
     Version 2 Copyright © 1999 Charles Cazabon.
     Version 3 not publicly released.
     Version 4 rewrite:
-    Copyright 2006 Charles Cazabon.
+    Copyright 2007 Charles Cazabon.
     Licensed under the terms of the GNU General Public License version 2 (only).
     See the file COPYING for details.
 
@@ -79,5 +79,6 @@
     The current version of memtester should be available at
     http://pyropus.ca/software/memtester/
     
-    Questions, comments, bug reports, and feature requests should be
-    directed to me at <memtest@discworld.dyndns.org>.
+    Questions, comments, and feature requests should be
+    directed to me at <charlesc-memtester@pyropus.ca>.  Read BUGS to report 
+    bugs found in memtester.

@@ -3,16 +3,16 @@
  *
  * Very simple but very effective user-space memory tester.
  * Originally by Simon Kirby <sim@stormix.com> <sim@neato.org>
- * Version 2 by Charles Cazabon <memtest@discworld.dyndns.org>
+ * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2006 Charles Cazabon <memtest@discworld.dyndns.org>
+ * Copyright (C) 2007 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.0.7"
+#define __version__ "4.0.8"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -86,9 +86,11 @@ int main(int argc, char **argv) {
     ulv *bufa, *bufb;
     int do_mlock = 1, done_mem = 0;
     int exit_code = 0;
+    size_t maxbytes = -1; /* addressable memory, in bytes */
+    size_t maxmb = (maxbytes >>20) + 1; /* addressable memory, in MB */
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2006 Charles Cazabon.\n");
+    printf("Copyright (C) 2007 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
@@ -101,6 +103,10 @@ int main(int argc, char **argv) {
         exit(EXIT_FAIL_NONSTARTER);
     }
     wantmb = (size_t) strtoul(argv[1], NULL, 0);
+    if (wantmb > maxmb) {
+	fprintf(stderr, "This system can only address %llu MB.\n", (ull) maxmb);
+	exit(EXIT_FAIL_NONSTARTER);
+    }
     wantbytes_orig = wantbytes = (size_t) (wantmb << 20);
     if (wantbytes < pagesize) {
         fprintf(stderr, "bytes < pagesize -- memory argument too large?\n");
