@@ -2,11 +2,14 @@
 # Makefile for memtester by Charles Cazabon.
 #
 # Copyright (C) 1999 Simon Kirby.
-# Copyright (C) 1999-2007 Charles Cazabon.
+# Copyright (C) 1999-2009 Charles Cazabon.
 # Licensed under the GNU General Public License version 2.  See the file
 # COPYING for details.
 #
 
+# You don't need to edit these; change the contents of the conf-cc and conf-ld
+# files if you need to change the compile/link commands.  See the README for
+# more information.
 CC			= $(shell head -n 1 conf-cc)
 LD			= $(shell head -n 1 conf-ld)
 

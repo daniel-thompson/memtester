@@ -35,4 +35,4 @@ the memory subsystem.  Results from the rest of the tests cannot be considered
 accurate if this test fails:
   Stuck Address
 
-Usage information is summarized in the file ABOUT, and in the man page.
+Usage information is summarized in the file README, and in the man page.

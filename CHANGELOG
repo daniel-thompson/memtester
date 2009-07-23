@@ -1,3 +1,16 @@
+Version 4.1.0
+23 July 2009
+
+  -added the ability to test a specific physical region of memory (by mmap'ing
+  /dev/mem) with the new -p option, which takes a hex starting address as a 
+  value.  This is mostly of use to developers trying to verify memory or I/O
+  mapped devices (on an embedded system, for instance). Thanks: Allon Stern.
+  -re-add the ability to set a suffix on the memory to allocate: "3G", "128K", etc,
+  mostly for use with the above new feature, where the "memory" to be tested is
+  less than a megabyte, but also useful for users wanting to test many gigabytes;
+  you no longer have to do the conversion-to-megs in your head.
+  -documentation updates and clarifications.
+
 Version 4.0.8
 21 November 2007
 

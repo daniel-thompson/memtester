@@ -4,7 +4,7 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2007 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2007-2009 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
@@ -20,6 +20,7 @@
 
 #include "types.h"
 #include "sizes.h"
+#include "memtester.h"
 
 char progress[] = "-\\|/";
 #define PROGRESSLEN 4
@@ -32,11 +33,21 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
     size_t i;
     ulv *p1 = bufa;
     ulv *p2 = bufb;
+    off_t physaddr;
 
     for (i = 0; i < count; i++, p1++, p2++) {
         if (*p1 != *p2) {
-            fprintf(stderr, "FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n", 
-                (ul) *p1, (ul) *p2, (ul) i);
+            if (use_phys) {
+                physaddr = physaddrbase + i;
+                fprintf(stderr, 
+                        "FAILURE: 0x%08lx != 0x%08lx at physical address "
+                        "0x%08lx.\n", 
+                        (ul) *p1, (ul) *p2, physaddr);
+            } else {
+                fprintf(stderr, 
+                        "FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n", 
+                        (ul) *p1, (ul) *p2, (ul) i);
+            }
             /* printf("Skipping to next test..."); */
             r = -1;
         }
@@ -48,6 +59,7 @@ int test_stuck_address(ulv *bufa, size_t count) {
     ulv *p1 = bufa;
     unsigned int j;
     size_t i;
+    off_t physaddr;
 
     printf("           ");
     fflush(stdout);
@@ -66,9 +78,18 @@ int test_stuck_address(ulv *bufa, size_t count) {
         p1 = (ulv *) bufa;
         for (i = 0; i < count; i++, p1++) {
             if (*p1 != (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1))) {
-                fprintf(stderr, 
-                    "FAILURE: possible bad address line at offset 0x%08lx.\n", 
-                    (ul) i);
+                if (use_phys) {
+                    physaddr = physaddrbase + i;
+                    fprintf(stderr, 
+                            "FAILURE: possible bad address line at physical "
+                            "address 0x%08lx.\n", 
+                            physaddr);
+                } else {
+                    fprintf(stderr, 
+                            "FAILURE: possible bad address line at offset "
+                            "0x%08lx.\n", 
+                            (ul) i);
+                }
                 printf("Skipping to next test...\n");
                 fflush(stdout);
                 return -1;

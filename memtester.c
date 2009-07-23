@@ -6,20 +6,22 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2007 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2007-2009 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.0.8"
+#define __version__ "4.1.0"
 
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #include "types.h"
@@ -68,7 +70,7 @@ int memtester_pagesize(void) {
         perror("get page size failed");
         exit(EXIT_FAIL_NONSTARTER);
     }
-    printf("pagesize is %ld\n", pagesize);
+    printf("pagesize is %ld\n", (long) pagesize);
     return pagesize;
 }
 #else
@@ -78,19 +80,35 @@ int memtester_pagesize(void) {
 }
 #endif
 
+/* Function declarations */
+void usage(char *me);
+
+/* Global vars - so tests have access to this information */
+int use_phys = 0;
+off_t physaddrbase = 0;
+
+/* Function definitions */
+void usage(char *me) {
+    fprintf(stderr, "\nUsage: %s [-p physaddrbase] <mem>[B|K|M|G] [loops]\n", me);
+    exit(EXIT_FAIL_NONSTARTER);
+}
+
 int main(int argc, char **argv) {
     ul loops, loop, i;
-    size_t pagesize, wantmb, wantbytes, wantbytes_orig, bufsize, halflen, count;
+    size_t pagesize, wantraw, wantmb, wantbytes, wantbytes_orig, bufsize,
+         halflen, count;
+    char *memsuffix, *addrsuffix, *loopsuffix;
     ptrdiff_t pagesizemask;
     void volatile *buf, *aligned;
     ulv *bufa, *bufb;
     int do_mlock = 1, done_mem = 0;
     int exit_code = 0;
+    int memfd, opt, memshift;
     size_t maxbytes = -1; /* addressable memory, in bytes */
-    size_t maxmb = (maxbytes >>20) + 1; /* addressable memory, in MB */
+    size_t maxmb = (maxbytes >> 20) + 1; /* addressable memory, in MB */
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2007 Charles Cazabon.\n");
+    printf("Copyright (C) 2009 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
@@ -98,29 +116,133 @@ int main(int argc, char **argv) {
     pagesizemask = (ptrdiff_t) ~(pagesize - 1);
     printf("pagesizemask is 0x%tx\n", pagesizemask);
 
-    if (argc < 2) {
+    while ((opt = getopt(argc, argv, "p:")) != -1) {
+        switch (opt) {
+            case 'p':
+                errno = 0;
+                physaddrbase = (off_t) strtoull(optarg, &addrsuffix, 16);
+                if (errno != 0) {
+                    fprintf(stderr, 
+                            "failed to parse physaddrbase arg; should be hex "
+                            "address (0x123...)\n");
+                    usage(argv[0]); /* doesn't return */
+                }
+                if (*addrsuffix != '\0') {
+                    /* got an invalid character in the address */
+                    fprintf(stderr, 
+                            "failed to parse physaddrbase arg; should be hex "
+                            "address (0x123...)\n");
+                    usage(argv[0]); /* doesn't return */
+                }
+                if (physaddrbase & (pagesize - 1)) {
+                    fprintf(stderr, 
+                            "bad physaddrbase arg; does not start on page "
+                            "boundary\n");
+                    usage(argv[0]); /* doesn't return */
+                }
+                /* okay, got address */
+                use_phys = 1;
+                break;
+            default: /* '?' */
+                usage(argv[0]); /* doesn't return */
+        }
+    }
+
+    if (optind >= argc) {
         fprintf(stderr, "need memory argument, in MB\n");
+        usage(argv[0]); /* doesn't return */
+    }
+
+    errno = 0;
+    wantraw = (size_t) strtoul(argv[optind], &memsuffix, 0);
+    if (errno != 0) {
+        fprintf(stderr, "failed to parse memory argument");
+        usage(argv[0]); /* doesn't return */
+    }
+    switch (*memsuffix) {
+        case 'G':
+        case 'g':
+            fprintf(stderr, "memory suffix G\n");
+            memshift = 30; /* gigabytes */
+            break;
+        case 'M':
+        case 'm':
+            fprintf(stderr, "memory suffix M\n");
+            memshift = 20; /* megabytes */
+            break;
+        case 'K':
+        case 'k':
+            fprintf(stderr, "memory suffix K\n");
+            memshift = 10; /* kilobytes */
+            break;
+        case 'B':
+        case 'b':
+            fprintf(stderr, "memory suffix B\n");
+            memshift = 0; /* bytes*/
+            break;
+        case '\0':  /* no suffix */
+            fprintf(stderr, "no memory suffix\n");
+            memshift = 20; /* megabytes */
+            break;
+        default:
+            /* bad suffix */
+            fprintf(stderr, "memory suffix %c\n", *memsuffix);
+            usage(argv[0]); /* doesn't return */
+    }
+    wantbytes_orig = wantbytes = ((size_t) wantraw << memshift);
+    wantmb = (wantbytes_orig >> 20);
+    optind++;
+    if (wantmb > maxmb) {
+        fprintf(stderr, "This system can only address %llu MB.\n", (ull) maxmb);
         exit(EXIT_FAIL_NONSTARTER);
     }
-    wantmb = (size_t) strtoul(argv[1], NULL, 0);
-    if (wantmb > maxmb) {
-	fprintf(stderr, "This system can only address %llu MB.\n", (ull) maxmb);
-	exit(EXIT_FAIL_NONSTARTER);
-    }
-    wantbytes_orig = wantbytes = (size_t) (wantmb << 20);
     if (wantbytes < pagesize) {
-        fprintf(stderr, "bytes < pagesize -- memory argument too large?\n");
+        fprintf(stderr, "bytes %d < pagesize %d -- memory argument too large?\n",
+                wantbytes, pagesize);
         exit(EXIT_FAIL_NONSTARTER);
     }
 
-    if (argc < 3) {
+    if (optind >= argc) {
         loops = 0;
     } else {
-        loops = strtoul(argv[2], NULL, 0);
+        errno = 0;
+        loops = strtoul(argv[optind], &loopsuffix, 0);
+        if (errno != 0) {
+            fprintf(stderr, "failed to parse number of loops");
+            usage(argv[0]); /* doesn't return */
+        }
+        if (*loopsuffix != '\0') {
+            fprintf(stderr, "loop suffix %c\n", *loopsuffix);
+            usage(argv[0]); /* doesn't return */
+        }
     }
 
     printf("want %lluMB (%llu bytes)\n", (ull) wantmb, (ull) wantbytes);
     buf = NULL;
+
+    if (use_phys) {
+        memfd = open("/dev/mem", O_RDWR | O_SYNC);
+        if (memfd == -1) {
+            perror("failed to open /dev/mem for physical memory");
+            exit(EXIT_FAIL_NONSTARTER);
+        }
+        buf = (void volatile *) mmap(0, wantbytes, PROT_READ | PROT_WRITE,
+                                     MAP_SHARED | MAP_LOCKED, memfd, 
+                                     physaddrbase);
+        if (buf == MAP_FAILED) {
+            perror("failed to mmap /dev/mem for physical memory");
+            exit(EXIT_FAIL_NONSTARTER);
+        }
+
+        if (mlock((void *) buf, wantbytes) < 0) {
+            fprintf(stderr, "failed to mlock mmap'ed space\n");
+            do_mlock = 0;
+        }
+
+        bufsize = wantbytes; /* accept no less */
+        aligned = buf;
+        done_mem = 1;
+    }
 
     while (!done_mem) {
         while (!buf && wantbytes) {
@@ -177,7 +299,7 @@ int main(int argc, char **argv) {
     }
 
     if (!do_mlock) fprintf(stderr, "Continuing with unlocked memory; testing "
-        "will be slower and less reliable.\n");
+                           "will be slower and less reliable.\n");
 
     halflen = bufsize / 2;
     count = halflen / sizeof(ul);
