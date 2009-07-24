@@ -1,3 +1,9 @@
+Version 4.1.1
+24 July 2009
+
+  -memtester.h was missing from the 4.1.0 tarball; release update to fix that.
+  Thanks: Owen Leonard.
+
 Version 4.1.0
 23 July 2009
 
