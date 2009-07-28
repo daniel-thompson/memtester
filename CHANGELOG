@@ -1,3 +1,9 @@
+Version 4.1.2
+28 July 2009
+  -fix portability issue with MAP_LOCKED flag.  Thanks: Scott Haneda.
+  -remove debugging output accidentally left in v.4.1.0.
+  -cleanups
+
 Version 4.1.1
 24 July 2009
 
@@ -8,7 +14,7 @@ Version 4.1.0
 23 July 2009
 
   -added the ability to test a specific physical region of memory (by mmap'ing
-  /dev/mem) with the new -p option, which takes a hex starting address as a 
+  /dev/mem) with the new -p option, which takes a hex starting address as a
   value.  This is mostly of use to developers trying to verify memory or I/O
   mapped devices (on an embedded system, for instance). Thanks: Allon Stern.
   -re-add the ability to set a suffix on the memory to allocate: "3G", "128K", etc,
@@ -35,11 +41,11 @@ Version 4.0.7
 Version 4.0.6
 15 November 2006
 
-  -test algorithm improvement: the walking 0 bits test was only walking 
-  the 0 bit in one direction, instead of walking it up and back down 
+  -test algorithm improvement: the walking 0 bits test was only walking
+  the 0 bit in one direction, instead of walking it up and back down
   the line the way it was intended to.  Thanks: Tim Rule.
   -formatting cleanups.
-  
+
 Version 4.0.5
 10 March 2005
 
@@ -48,7 +54,7 @@ Version 4.0.5
   amount and try again without mlock().  The reason for this is that on many
   systems, mlock() won't return EPERM until after having returned ENOMEM for
   a larger amount.  The new behaviour allows processes without mlock privileges
-  to still test the fully-specified amount or as much memory as can be 
+  to still test the fully-specified amount or as much memory as can be
   allocated.  Thanks for the suggestion and testing to Dan Bradley.
 
 Version 4.0.4

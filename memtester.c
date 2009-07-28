@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.1.1"
+#define __version__ "4.1.2"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -51,6 +51,7 @@ struct test tests[] = {
     { NULL, NULL }
 };
 
+/* Sanity checks and portability helper macros. */
 #ifdef _SC_VERSION
 void check_posix_system(void) {
     if (sysconf(_SC_VERSION) < 198808L) {
@@ -78,6 +79,12 @@ int memtester_pagesize(void) {
     printf("sysconf(_SC_PAGE_SIZE) not supported; using pagesize of 8192\n");
     return 8192;
 }
+#endif
+
+/* Some systems don't define MAP_LOCKED.  Define it to 0 here
+   so it's just a no-op when ORed with other constants. */
+#ifndef MAP_LOCKED
+  #define MAP_LOCKED 0
 #endif
 
 /* Function declarations */
@@ -122,20 +129,20 @@ int main(int argc, char **argv) {
                 errno = 0;
                 physaddrbase = (off_t) strtoull(optarg, &addrsuffix, 16);
                 if (errno != 0) {
-                    fprintf(stderr, 
+                    fprintf(stderr,
                             "failed to parse physaddrbase arg; should be hex "
                             "address (0x123...)\n");
                     usage(argv[0]); /* doesn't return */
                 }
                 if (*addrsuffix != '\0') {
                     /* got an invalid character in the address */
-                    fprintf(stderr, 
+                    fprintf(stderr,
                             "failed to parse physaddrbase arg; should be hex "
                             "address (0x123...)\n");
                     usage(argv[0]); /* doesn't return */
                 }
                 if (physaddrbase & (pagesize - 1)) {
-                    fprintf(stderr, 
+                    fprintf(stderr,
                             "bad physaddrbase arg; does not start on page "
                             "boundary\n");
                     usage(argv[0]); /* doesn't return */
@@ -162,31 +169,25 @@ int main(int argc, char **argv) {
     switch (*memsuffix) {
         case 'G':
         case 'g':
-            fprintf(stderr, "memory suffix G\n");
             memshift = 30; /* gigabytes */
             break;
         case 'M':
         case 'm':
-            fprintf(stderr, "memory suffix M\n");
             memshift = 20; /* megabytes */
             break;
         case 'K':
         case 'k':
-            fprintf(stderr, "memory suffix K\n");
             memshift = 10; /* kilobytes */
             break;
         case 'B':
         case 'b':
-            fprintf(stderr, "memory suffix B\n");
             memshift = 0; /* bytes*/
             break;
         case '\0':  /* no suffix */
-            fprintf(stderr, "no memory suffix\n");
             memshift = 20; /* megabytes */
             break;
         default:
             /* bad suffix */
-            fprintf(stderr, "memory suffix %c\n", *memsuffix);
             usage(argv[0]); /* doesn't return */
     }
     wantbytes_orig = wantbytes = ((size_t) wantraw << memshift);
@@ -227,7 +228,7 @@ int main(int argc, char **argv) {
             exit(EXIT_FAIL_NONSTARTER);
         }
         buf = (void volatile *) mmap(0, wantbytes, PROT_READ | PROT_WRITE,
-                                     MAP_SHARED | MAP_LOCKED, memfd, 
+                                     MAP_SHARED | MAP_LOCKED, memfd,
                                      physaddrbase);
         if (buf == MAP_FAILED) {
             perror("failed to mmap /dev/mem for physical memory");
@@ -259,14 +260,14 @@ int main(int argc, char **argv) {
             if ((size_t) buf % pagesize) {
                 /* printf("aligning to page -- was 0x%tx\n", buf); */
                 aligned = (void volatile *) ((size_t) buf & pagesizemask) + pagesize;
-                /* printf("  now 0x%tx -- lost %d bytes\n", aligned, 
-                 *      (size_t) aligned - (size_t) buf); 
+                /* printf("  now 0x%tx -- lost %d bytes\n", aligned,
+                 *      (size_t) aligned - (size_t) buf);
                  */
                 bufsize -= ((size_t) aligned - (size_t) buf);
             } else {
                 aligned = buf;
             }
-            /* Try memlock */
+            /* Try mlock */
             if (mlock((void *) aligned, bufsize) < 0) {
                 switch(errno) {
                     case ENOMEM:
@@ -292,9 +293,9 @@ int main(int argc, char **argv) {
                 printf("locked.\n");
                 done_mem = 1;
             }
-        } else { 
+        } else {
             done_mem = 1;
-            printf("\n"); 
+            printf("\n");
         }
     }
 
