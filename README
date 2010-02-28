@@ -5,10 +5,10 @@
     by Charles Cazabon <charlesc-memtester@pyropus.ca>
     
     Copyright 1999 Simon Kirby. 
-    Version 2 Copyright © 1999 Charles Cazabon.
+    Version 2 Copyright 1999 Charles Cazabon.
     Version 3 not publicly released.
     Version 4 rewrite:
-    Copyright 2007 Charles Cazabon.
+    Copyright 2004-2010 Charles Cazabon.
     Licensed under the terms of the GNU General Public License version 2 (only).
     See the file COPYING for details.
 
@@ -47,6 +47,10 @@
     compiler isn't in your PATH, you could change it to use `/path/to/cc` or
     similar.
     
+    You can run the resulting binary from anywhere, but if you want to install
+    it and the manpage to /usr/local/, `make install` will do that.  Edit
+    INSTALLPATH in the makefile if you prefer a different location.
+
     I've successfully built and run memtester 4 on the following systems:
 
         HP Tru64 Unix 4.0g (Alpha)

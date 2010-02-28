@@ -4,7 +4,7 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2007-2009 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2004-2010 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
@@ -25,6 +25,7 @@
 char progress[] = "-\\|/";
 #define PROGRESSLEN 4
 #define PROGRESSOFTEN 2500
+#define ONE 0x00000001L
 
 /* Function definitions. */
 
@@ -322,9 +323,9 @@ int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count) {
         fflush(stdout);
         for (i = 0; i < count; i++) {
             if (j < UL_LEN) { /* Walk it up. */
-                *p1++ = *p2++ = 0x00000001 << j;
+                *p1++ = *p2++ = ONE << j;
             } else { /* Walk it back down. */
-                *p1++ = *p2++ = 0x00000001 << (UL_LEN * 2 - j - 1);
+                *p1++ = *p2++ = ONE << (UL_LEN * 2 - j - 1);
             }
         }
         printf("\b\b\b\b\b\b\b\b\b\b\b");
@@ -355,9 +356,9 @@ int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count) {
         fflush(stdout);
         for (i = 0; i < count; i++) {
             if (j < UL_LEN) { /* Walk it up. */
-                *p1++ = *p2++ = UL_ONEBITS ^ (0x00000001 << j);
+                *p1++ = *p2++ = UL_ONEBITS ^ (ONE << j);
             } else { /* Walk it back down. */
-                *p1++ = *p2++ = UL_ONEBITS ^ (0x00000001 << (UL_LEN * 2 - j - 1));
+                *p1++ = *p2++ = UL_ONEBITS ^ (ONE << (UL_LEN * 2 - j - 1));
             }
         }
         printf("\b\b\b\b\b\b\b\b\b\b\b");
@@ -389,14 +390,14 @@ int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count) {
         for (i = 0; i < count; i++) {
             if (j < UL_LEN) { /* Walk it up. */
                 *p1++ = *p2++ = (i % 2 == 0)
-                    ? (0x00000001 << j) | (0x00000001 << (j + 2))
-                    : UL_ONEBITS ^ ((0x00000001 << j)
-                                    | (0x00000001 << (j + 2)));
+                    ? (ONE << j) | (ONE << (j + 2))
+                    : UL_ONEBITS ^ ((ONE << j)
+                                    | (ONE << (j + 2)));
             } else { /* Walk it back down. */
                 *p1++ = *p2++ = (i % 2 == 0)
-                    ? (0x00000001 << (UL_LEN * 2 - 1 - j)) | (0x00000001 << (UL_LEN * 2 + 1 - j))
-                    : UL_ONEBITS ^ (0x00000001 << (UL_LEN * 2 - 1 - j)
-                                    | (0x00000001 << (UL_LEN * 2 + 1 - j)));
+                    ? (ONE << (UL_LEN * 2 - 1 - j)) | (ONE << (UL_LEN * 2 + 1 - j))
+                    : UL_ONEBITS ^ (ONE << (UL_LEN * 2 - 1 - j)
+                                    | (ONE << (UL_LEN * 2 + 1 - j)));
             }
         }
         printf("\b\b\b\b\b\b\b\b\b\b\b");
@@ -421,7 +422,7 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
     printf("           ");
     fflush(stdout);
     for (k = 0; k < UL_LEN; k++) {
-        q = 0x00000001 << k;
+        q = ONE << k;
         for (j = 0; j < 8; j++) {
             printf("\b\b\b\b\b\b\b\b\b\b\b");
             q = ~q;

@@ -6,13 +6,13 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2007-2009 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2004-2010 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.1.2"
+#define __version__ "4.1.3"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     size_t maxmb = (maxbytes >> 20) + 1; /* addressable memory, in MB */
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2009 Charles Cazabon.\n");
+    printf("Copyright (C) 2010 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
@@ -198,7 +198,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAIL_NONSTARTER);
     }
     if (wantbytes < pagesize) {
-        fprintf(stderr, "bytes %d < pagesize %d -- memory argument too large?\n",
+        fprintf(stderr, "bytes %ld < pagesize %ld -- memory argument too large?\n",
                 wantbytes, pagesize);
         exit(EXIT_FAIL_NONSTARTER);
     }
