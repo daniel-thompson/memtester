@@ -1,3 +1,14 @@
+Version 4.2.0
+30 July 2010
+  -define _FILE_OFFSET_BITS to 64 by default in conf-cc, which causes some 
+  32-bit systems with larger-than-32-bit address spaces to have a 64-bit off_t,
+  allowing testing of larger chunks of memory.  Thanks to Steven A. Falco for
+  the suggestion.  Let me know if this definition causes problems for anyone.
+  -add tests of 8-bit-wide and 16-bit-wide random writes, to enable verifying 
+  the correct operation of hardware.  Thanks: Dick Hollenbeck.  If these tests
+  trigger unaligned access problems on your platform, you can eliminate these
+  tests by removing the -DTEST_NARROW_WRITES definition from the conf-cc file.
+
 Version 4.1.3
 28 February 2010
   -fix 64-bit data patterns with some versions of gcc.  Thanks: Tony Battersby.

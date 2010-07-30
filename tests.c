@@ -445,3 +445,81 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
     fflush(stdout);
     return 0;
 }
+
+#ifdef TEST_NARROW_WRITES    
+int test_8bit_wide_random(ulv* bufa, ulv* bufb, size_t count) {
+    u8v *p1, *t;
+    ulv *p2;
+    int attempt;
+    unsigned int b, j = 0;
+    size_t i;
+
+    putchar(' ');
+    fflush(stdout);
+    for (attempt = 0; attempt < 2;  attempt++) {
+        if (attempt & 1) {
+            p1 = (u8v *) bufa;
+            p2 = bufb;
+        } else {
+            p1 = (u8v *) bufb;
+            p2 = bufa;
+        }
+        for (i = 0; i < count; i++) {
+            t = mword8.bytes;
+            *p2++ = mword8.val = rand_ul();
+            for (b=0; b < UL_LEN/8; b++) {
+                *p1++ = *t++;
+            }
+            if (!(i % PROGRESSOFTEN)) {
+                putchar('\b');
+                putchar(progress[++j % PROGRESSLEN]);
+                fflush(stdout);
+            }
+        }
+        if (compare_regions(bufa, bufb, count)) {
+            return -1;
+        }
+    }
+    printf("\b \b");
+    fflush(stdout);
+    return 0;
+}
+
+int test_16bit_wide_random(ulv* bufa, ulv* bufb, size_t count) {
+    u16v *p1, *t;
+    ulv *p2;
+    int attempt;
+    unsigned int b, j = 0;
+    size_t i;
+
+    putchar( ' ' );
+    fflush( stdout );
+    for (attempt = 0; attempt < 2; attempt++) {
+        if (attempt & 1) {
+            p1 = (u16v *) bufa;
+            p2 = bufb;
+        } else {
+            p1 = (u16v *) bufb;
+            p2 = bufa;
+        }
+        for (i = 0; i < count; i++) {
+            t = mword16.u16s;
+            *p2++ = mword16.val = rand_ul();
+            for (b = 0; b < UL_LEN/16; b++) {
+                *p1++ = *t++;
+            }
+            if (!(i % PROGRESSOFTEN)) {
+                putchar('\b');
+                putchar(progress[++j % PROGRESSLEN]);
+                fflush(stdout);
+            }
+        }
+        if (compare_regions(bufa, bufb, count)) {
+            return -1;
+        }
+    }
+    printf("\b \b");
+    fflush(stdout);
+    return 0;
+}
+#endif

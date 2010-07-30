@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.1.3"
+#define __version__ "4.2.0"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -48,6 +48,10 @@ struct test tests[] = {
     { "Bit Flip", test_bitflip_comparison },
     { "Walking Ones", test_walkbits1_comparison },
     { "Walking Zeroes", test_walkbits0_comparison },
+#ifdef TEST_NARROW_WRITES    
+    { "8-bit Writes", test_8bit_wide_random },
+    { "16-bit Writes", test_16bit_wide_random },
+#endif
     { NULL, NULL }
 };
 
