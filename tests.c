@@ -39,7 +39,7 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
     for (i = 0; i < count; i++, p1++, p2++) {
         if (*p1 != *p2) {
             if (use_phys) {
-                physaddr = physaddrbase + i;
+                physaddr = physaddrbase + (i * sizeof(ul));
                 fprintf(stderr, 
                         "FAILURE: 0x%08lx != 0x%08lx at physical address "
                         "0x%08lx.\n", 
@@ -47,7 +47,7 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
             } else {
                 fprintf(stderr, 
                         "FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n", 
-                        (ul) *p1, (ul) *p2, (ul) i);
+                        (ul) *p1, (ul) *p2, (ul) (i * sizeof(ul)));
             }
             /* printf("Skipping to next test..."); */
             r = -1;
@@ -80,7 +80,7 @@ int test_stuck_address(ulv *bufa, size_t count) {
         for (i = 0; i < count; i++, p1++) {
             if (*p1 != (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1))) {
                 if (use_phys) {
-                    physaddr = physaddrbase + i;
+                    physaddr = physaddrbase + (i * sizeof(ul));
                     fprintf(stderr, 
                             "FAILURE: possible bad address line at physical "
                             "address 0x%08lx.\n", 
@@ -89,7 +89,7 @@ int test_stuck_address(ulv *bufa, size_t count) {
                     fprintf(stderr, 
                             "FAILURE: possible bad address line at offset "
                             "0x%08lx.\n", 
-                            (ul) i);
+                            (ul) (i * sizeof(ul)));
                 }
                 printf("Skipping to next test...\n");
                 fflush(stdout);

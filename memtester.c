@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.2.0"
+#define __version__ "4.2.1"
 
 #include <stddef.h>
 #include <stdlib.h>
