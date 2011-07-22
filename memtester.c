@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.2.1"
+#define __version__ "4.2.2"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -274,6 +274,12 @@ int main(int argc, char **argv) {
             /* Try mlock */
             if (mlock((void *) aligned, bufsize) < 0) {
                 switch(errno) {
+                    case EAGAIN: /* BSDs */
+                        printf("over system/pre-process limit, reducing...\n");
+                        free((void *) buf);
+                        buf = NULL;
+                        wantbytes -= pagesize;
+                        break;
                     case ENOMEM:
                         printf("too many pages, reducing...\n");
                         free((void *) buf);

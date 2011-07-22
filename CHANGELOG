@@ -1,4 +1,10 @@
-Version 4.2.1
+Version 4.2.2
+22 July 2011
+  -add progress message for one more errno value (EAGAIN) in response to failed
+  mlock; BSDs use this to indicate the lock failed due to being over a system
+  or process limit, much like ENOMEM.
+
+  Version 4.2.1
 3 October 2010
   -fix offsets/addresses were not being reported correctly in test failure 
   messages.  Thanks: Anton Sergeev.
